@@ -1,0 +1,39 @@
+services:
+  ansible:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ansible
+    command: ["tail", "-f", "/dev/null"]
+
+  vps1:
+    image: linuxserver/openssh-server:arm64v8-latest
+    container_name: vps1
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Paris
+      - SUDO_ACCESS=true
+    ports:
+      - "2222:2222"
+  
+  vps2:
+    image: linuxserver/openssh-server:arm64v8-latest
+    container_name: vps2
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Paris
+      - PUBLIC_KEY_FILE=~/.ssh/id_ed25519_personal.pub
+      - USER_NAME=admin
+  
+  vps3:
+    image: linuxserver/openssh-server:arm64v8-latest
+    container_name: vps3
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Paris
+      - PASSWORD_ACCESS=true
+      - USER_PASSWORD=password1234
+      - USER_NAME=debian
