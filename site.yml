@@ -1,0 +1,12 @@
+---
+- name: Setup VPS Security
+  hosts: vps
+  become: yes
+  vars:
+    # Default variables, can be overridden in inventory or group_vars
+    ssh_port: 5022
+    new_user: "deploy"
+    
+  roles:
+    - common
+    - security
