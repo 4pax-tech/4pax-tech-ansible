@@ -1,15 +1,19 @@
 vps:
   hosts:
     vps1:
-      ansible_host: 192.168.1.10
-      ansible_user: root
+      ansible_host: vps1
+      ansible_user: root_user
+      ansible_port: 2222
+      ansible_ssh_private_key_file: /keys/id_ed25519_root
     vps2:
-      ansible_host: 192.168.1.11
+      ansible_host: vps2
       ansible_user: admin
-      ansible_ssh_private_key_file: ~/.ssh/other_key
+      ansible_port: 2222
+      ansible_ssh_private_key_file: /keys/id_ed25519_user
     vps3:
-      ansible_host: 192.168.1.12
+      ansible_host: vps3
       ansible_user: debian
-      ansible_password: secret_password
+      ansible_port: 2222
+      ansible_password: password1234
   vars:
     ansible_python_interpreter: /usr/bin/python3

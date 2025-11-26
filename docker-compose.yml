@@ -10,14 +10,13 @@ services:
       - ./ssh_keys:/keys
 
   vps1:
-    image: linuxserver/openssh-server:arm64v8-latest
+    build:
+      context: demo/vps1
+      args:
+        IMAGE_TAG: ${IMAGE_TAG:-arm64v8-latest}
     container_name: vps1
     environment:
-      - PUID=0
-      - PGID=0
       - TZ=Europe/Paris
-      - SUDO_ACCESS=true
-      - USER_NAME=root_user
       - PUBLIC_KEY_FILE=/keys/id_ed25519_root.pub
     volumes:
       - ./ssh_keys/id_ed25519_root.pub:/keys/id_ed25519_root.pub:ro
@@ -25,26 +24,22 @@ services:
       - "2222:2222"
   
   vps2:
-    image: linuxserver/openssh-server:arm64v8-latest
+    build:
+      context: demo/vps2
+      args:
+        IMAGE_TAG: ${IMAGE_TAG:-arm64v8-latest}
     container_name: vps2
     environment:
-      - PUID=1000
-      - PGID=1000
       - TZ=Europe/Paris
-      - SUDO_ACCESS=true
-      - USER_NAME=admin
       - PUBLIC_KEY_FILE=/keys/id_ed25519_user.pub
     volumes:
       - ./ssh_keys/id_ed25519_user.pub:/keys/id_ed25519_user.pub:ro
   
   vps3:
-    image: linuxserver/openssh-server:arm64v8-latest
+    build:
+      context: demo/vps3
+      args:
+        IMAGE_TAG: ${IMAGE_TAG:-arm64v8-latest}
     container_name: vps3
     environment:
-      - PUID=1000
-      - PGID=1000
       - TZ=Europe/Paris
-      - PASSWORD_ACCESS=true
-      - SUDO_ACCESS=true
-      - USER_PASSWORD=password1234
-      - USER_NAME=debian

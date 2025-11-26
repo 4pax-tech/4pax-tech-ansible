@@ -1,12 +1,18 @@
+ARCH := $(shell uname -m)
+ifeq ($(ARCH),arm64)
+    IMAGE_TAG := arm64v8-latest
+else
+    IMAGE_TAG := amd64-latest
+endif
+
 start-ansible:
-	docker compose up -d --build ansible
+	IMAGE_TAG=$(IMAGE_TAG) docker compose up -d --build ansible
 
 stop-ansible:
 	docker compose down ansible
 
-
 start-demo-vps:
-	docker compose up -d --build vps1 vps2 vps3
+	IMAGE_TAG=$(IMAGE_TAG) docker compose up -d --build vps1 vps2 vps3
 
 stop-demo-vps:
 	docker compose down vps1 vps2 vps3
