@@ -1,0 +1,47 @@
+---
+# Alpine-specific tasks
+- name: Set SSH service name for Alpine
+  set_fact:
+    ssh_service: "{{ ssh_service_alpine }}"
+
+
+- name: Ensure sudo is installed (Alpine)
+  apk:
+    name: sudo
+    state: present
+
+- name: Ensure openssh is installed (Alpine)
+  apk:
+    name:
+      - openssh
+      - openssh-sftp-server
+    state: present
+    update_cache: yes
+  when: ansible_virtualization_type not in ["docker", "container"]
+
+- name: Ensure sshd service is enabled at boot (Alpine)
+  command: rc-update add sshd default
+  args:
+    creates: /etc/runlevels/default/sshd
+  become: yes
+  changed_when: false
+  failed_when: false
+
+# Ensure /etc/ssh exists and has reasonable permissions (helpful before templating)
+- name: Ensure /etc/ssh exists (Alpine)
+  file:
+    path: /etc/ssh
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+# Optional: ensure iptables is present for firewall tasks
+- name: Ensure iptables package is installed (Alpine)
+  apk:
+    name: iptables
+    state: present
+    update_cache: yes
+  when: "'iptables' in (firewall_backend | default('iptables')) or ansible_pkg_mgr == 'apk'"
+
+# If we changed anything that requires handlers, handlers will run from other tasks via notify

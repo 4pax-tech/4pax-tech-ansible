@@ -9,6 +9,21 @@ services:
       - .:/app
       - ./ssh_keys:/keys
 
+  vps1-debian:
+    build:
+      context: demo/vps1-debian
+      args:
+        IMAGE_TAG: ${IMAGE_TAG:-arm64v8-latest}
+    container_name: vps1-debian
+    environment:
+      - TZ=Europe/Paris
+      - PUBLIC_KEY_FILE=/keys/id_ed25519_root.pub
+    volumes:
+      - ./ssh_keys/id_ed25519_root.pub:/keys/id_ed25519_root.pub:ro
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+
   vps1:
     build:
       context: demo/vps1
@@ -20,8 +35,9 @@ services:
       - PUBLIC_KEY_FILE=/keys/id_ed25519_root.pub
     volumes:
       - ./ssh_keys/id_ed25519_root.pub:/keys/id_ed25519_root.pub:ro
-    ports:
-      - "2222:2222"
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
   
   vps2:
     build:
@@ -34,7 +50,10 @@ services:
       - PUBLIC_KEY_FILE=/keys/id_ed25519_user.pub
     volumes:
       - ./ssh_keys/id_ed25519_user.pub:/keys/id_ed25519_user.pub:ro
-  
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW  
+
   vps3:
     build:
       context: demo/vps3
@@ -43,3 +62,6 @@ services:
     container_name: vps3
     environment:
       - TZ=Europe/Paris
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW

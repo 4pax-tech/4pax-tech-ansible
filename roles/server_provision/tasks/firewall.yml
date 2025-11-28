@@ -1,0 +1,31 @@
+---
+# Debian — UFW
+- block:
+    - name: Allow required ports
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+      loop: "{{ firewall_allow_extra_ports }}"
+
+    - name: Enable UFW
+      ufw:
+        state: enabled
+        policy: deny
+  when: ansible_facts["os_family"] == "Debian"
+
+# Alpine — iptables
+- block:
+    - name: Install iptables
+      package:
+        name: iptables
+        state: present
+
+    - name: Allow required ports via iptables
+      command: iptables -A INPUT -p tcp --dport {{ item }} -j ACCEPT
+      loop: "{{ firewall_allow_extra_ports }}"
+      notify: save iptables
+
+    - name: Enable iptables on boot
+      command: rc-update add iptables default
+
+  when: ansible_facts["os_family"] == "Alpine"

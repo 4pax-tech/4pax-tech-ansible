@@ -1,12 +1,13 @@
 ---
-- name: Setup VPS Security
-  hosts: vps
-  become: yes
-  vars:
-    # Default variables, can be overridden in inventory or group_vars
-    ssh_port: 5022
-    new_user: "deploy"
-    
+- hosts: all
+  gather_facts: false
+
+  # now Python is installed → facts are available
+  pre_tasks:
+    - import_tasks: roles/server_provision/tasks/bootstrap.yml
+    - name: Gather facts (no become, must run after bootstrap)
+      setup:
+      become: false
+
   roles:
-    - common
-    - security
+    - server_provision

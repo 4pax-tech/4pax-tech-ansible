@@ -1,0 +1,25 @@
+---
+- name: Ensure group 'wheel' exists # This is mainly for RedHat/CentOS/Fedora systems
+  group:
+    name: wheel
+    state: present
+
+- name: Ensure group 'sudo' exists
+  group:
+    name: sudo
+    state: present
+
+- name: Ensure user exists
+  user:
+    name: "{{ new_user }}"
+    shell: "{{ new_user_shell }}"
+    home: "{{ new_user_home }}"
+    groups: sudo
+    append: yes
+    create_home: yes
+
+- name: Add authorized_key from file
+  authorized_key:
+    user: "{{ new_user }}"
+    key: "{{ lookup('file', new_user_ssh_pubkey) }}"
+

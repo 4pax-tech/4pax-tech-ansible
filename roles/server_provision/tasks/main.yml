@@ -1,0 +1,18 @@
+---
+- import_tasks: bootstrap.yml
+
+# Now Python exists → gather facts
+- setup:
+
+- import_tasks: packages.yml
+- import_tasks: user.yml
+- import_tasks: ssh.yml
+- import_tasks: firewall.yml
+- import_tasks: fail2ban.yml
+
+# OS-specific
+- include_tasks: alpine.yml
+  when: ansible_facts["os_family"] == "Alpine"
+
+- include_tasks: debian.yml
+  when: ansible_facts["os_family"] == "Debian"

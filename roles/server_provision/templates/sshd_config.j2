@@ -1,0 +1,17 @@
+Port {{ ssh_port }}
+
+PermitRootLogin {{ ssh_permit_root_login | bool | ternary('yes', 'no') }}
+PasswordAuthentication {{ ssh_password_auth | bool | ternary('yes', 'no') }}
+
+PubkeyAuthentication yes
+ChallengeResponseAuthentication {{ ssh_challenge_response | default('no') | bool | ternary('yes', 'no') }}
+
+{% if ssh_allow_users is defined and ssh_allow_users | length > 0 %}
+{% if ssh_allow_users is string %}
+AllowUsers {{ ssh_allow_users }}
+{% else %}
+AllowUsers {{ ssh_allow_users | join(' ') }}
+{% endif %}
+{% endif %}
+
+UsePAM yes

@@ -1,0 +1,33 @@
+---
+# Debian/Ubuntu-specific tasks
+- name: Set SSH service name for Debian
+  set_fact:
+    ssh_service: "{{ ssh_service_debian }}"
+
+- name: Ensure sudo package is installed (Debian)
+  apt:
+    name: sudo
+    state: present
+    update_cache: yes
+
+- name: Ensure openssh-server is installed (Debian)
+  apt:
+    name: openssh-server
+    state: present
+    update_cache: yes
+
+# Ensure UFW present if we plan to use it (packages.yml might have installed it, but safe-guard here)
+- name: Ensure ufw (firewall) package present on Debian
+  apt:
+    name: ufw
+    state: present
+  when: "'ufw' in (ansible_facts.packages | default({})) or true"
+
+# Fail2ban package is handled in fail2ban.yml, but make sure service can be enabled later
+- name: Ensure /etc/ssh exists (Debian)
+  file:
+    path: /etc/ssh
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"

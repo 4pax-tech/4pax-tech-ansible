@@ -1,0 +1,35 @@
+---
+# Debian
+- block:
+    - name: Install fail2ban
+      apt:
+        name: fail2ban
+        state: present
+        update_cache: yes
+
+    - name: Configure fail2ban
+      template:
+        src: jail.debian.j2
+        dest: /etc/fail2ban/jail.local
+        backup: yes
+      notify: restart fail2ban
+  when: ansible_facts["os_family"] == "Debian"
+
+# Alpine
+- block:
+    - name: Install fail2ban
+      apk:
+        name: fail2ban
+        state: present
+        update_cache: yes
+
+    - name: Configure fail2ban (Alpine)
+      template:
+        src: jail.alpine.j2
+        dest: /etc/fail2ban/jail.local
+        backup: yes
+      notify: restart fail2ban
+
+    - name: Enable fail2ban on boot
+      command: rc-update add fail2ban default
+  when: ansible_facts["os_family"] == "Alpine"

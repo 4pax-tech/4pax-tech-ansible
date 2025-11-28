@@ -1,0 +1,19 @@
+---
+- name: Deploy SSH config
+  template:
+    src: sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    backup: yes
+    validate: /usr/sbin/sshd -t -f %s
+  notify: restart ssh
+
+- name: Check SSH port is active
+  command: "ss -tulpn | grep -E ':{{ ssh_port }} '"
+  register: ssh_port_check
+  failed_when: false
+
+- name: Reboot if SSH port did not activate
+  reboot:
+  when:
+    - allow_reboot_if_ssh_changed
+    - ssh_port_check.rc != 0
