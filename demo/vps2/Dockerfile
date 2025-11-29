@@ -1,12 +1,32 @@
-ARG IMAGE_TAG=latest
-FROM linuxserver/openssh-server:${IMAGE_TAG}
+FROM alpine:latest
 
-RUN apk add --no-cache sudo
+# Install OpenSSH
+RUN apk add --no-cache openssh shadow
 
-# Pre-configure environment variables for user access
-ENV PUID=${PUID:-1000}
-ENV PGID=${PGID:-1000}
-ENV SUDO_ACCESS=${SUDO_ACCESS:-true}
-ENV USER_NAME=${USER_NAME:-admin}
-ENV USER_PASSWORD=${USER_PASSWORD:-passwordABCD}
-ENV PASSWORD_ACCESS=${PASSWORD_ACCESS:-false}
+# Create a non-root user
+RUN useradd -m -s /bin/ash user && \
+    usermod -aG root user
+
+# Set a password for the user
+RUN echo 'user:passwordABCD' | chpasswd
+
+# Configure SSH
+RUN ssh-keygen -A && \
+    mkdir -p /run/sshd && \
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config && \
+    sed -i 's/#Port 22/Port 2222/' /etc/ssh/sshd_config
+
+# Add authorized SSH key
+RUN mkdir -p /home/user/.ssh && \
+    chmod 700 /home/user/.ssh && \
+    chown user:user /home/user/.ssh
+RUN echo /keys/id_ed25519_user.pub > /home/user/.ssh/authorized_keys && \
+    chmod 600 /home/user/.ssh/authorized_keys && \
+    chown user:user /home/user/.ssh/authorized_keys
+
+# Expose SSH port
+EXPOSE 2222
+
+# Start SSH daemon
+CMD ["/usr/sbin/sshd", "-D", "-e"]

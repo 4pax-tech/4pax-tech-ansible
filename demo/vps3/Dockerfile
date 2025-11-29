@@ -1,12 +1,24 @@
-ARG IMAGE_TAG=latest
-FROM linuxserver/openssh-server:${IMAGE_TAG}
+FROM alpine:latest
 
-RUN apk add --no-cache sudo
+# Install OpenSSH
+RUN apk add --no-cache openssh shadow
 
-# Pre-configure environment variables for password access
-ENV PUID=${PUID:-1000}
-ENV PGID=${PGID:-1000}
-ENV PASSWORD_ACCESS=${PASSWORD_ACCESS:-true}
-ENV SUDO_ACCESS=${SUDO_ACCESS:-true}
-ENV USER_NAME=${USER_NAME:-debian}
-ENV USER_PASSWORD=${USER_PASSWORD:-password1234}
+# Create a non-root user
+RUN useradd -m -s /bin/ash user && \
+    usermod -aG root user
+
+# Set a password for the user
+RUN echo 'user:password1234' | chpasswd
+
+# Configure SSH
+RUN ssh-keygen -A && \
+    mkdir -p /run/sshd && \
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config && \
+    sed -i 's/#Port 22/Port 2222/' /etc/ssh/sshd_config
+
+# Expose SSH port
+EXPOSE 2222
+
+# Start SSH daemon
+CMD ["/usr/sbin/sshd", "-D", "-e"]
