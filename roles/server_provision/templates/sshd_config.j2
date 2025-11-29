@@ -4,6 +4,7 @@ PermitRootLogin {{ ssh_permit_root_login | bool | ternary('yes', 'no') }}
 PasswordAuthentication {{ ssh_password_auth | bool | ternary('yes', 'no') }}
 
 PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
 ChallengeResponseAuthentication {{ ssh_challenge_response | default('no') | bool | ternary('yes', 'no') }}
 
 {% if ssh_allow_users is defined and ssh_allow_users | length > 0 %}

@@ -5,6 +5,14 @@ RUN apt update && apt install -y \
     ssh \
     sshpass
 
-RUN pip install --no-cache-dir ansible
+RUN pip install --no-cache-dir ansible passlib
 
-COPY . .
+COPY scripts/ansible-entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+
+COPY inventories/ ./inventories
+COPY roles/ ./roles
+COPY site.yml ./site.yml
+COPY ansible.cfg ./ansible.cfg
+
+

@@ -1,3 +1,5 @@
+.PHONY: start-ansible stop-ansible start-demo-vps stop-demo-vps start-demo stop-demo restart-demo check-inventory ping-all ping-raw setup-demo clean-demo
+
 ARCH := $(shell uname -m)
 ifeq ($(ARCH),arm64)
     IMAGE_TAG := arm64v8-latest
@@ -7,7 +9,7 @@ endif
 
 start-ansible:
 	IMAGE_TAG=$(IMAGE_TAG) docker compose up -d --build ansible
-
+	
 stop-ansible:
 	docker compose down ansible
 
@@ -18,6 +20,8 @@ stop-demo-vps:
 	docker compose down vps1 vps2 vps3
 
 start-demo: start-ansible start-demo-vps
+	@test -f inventories/demo-bootstrap/group_vars/all/vault.yml || docker exec -it ansible ansible-vault encrypt --output inventories/demo-bootstrap/group_vars/all/vault.yml inventories/demo-bootstrap/secrets.yml
+	docker exec ansible cp ./inventories/demo-bootstrap/group_vars/all/vault.yml ./inventories/demo/group_vars/all/vault.yml
 
 stop-demo: stop-ansible stop-demo-vps
 

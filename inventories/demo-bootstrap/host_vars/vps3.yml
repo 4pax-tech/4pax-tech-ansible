@@ -1,0 +1,11 @@
+ansible_host: vps3
+ansible_user: debian
+ansible_port: 2222
+
+# SSH password (for login)
+ansible_password: "password1234"
+
+# Sudo password (required for Python installation)
+ansible_become: true
+ansible_become_method: sudo
+ansible_become_password: "password1234"

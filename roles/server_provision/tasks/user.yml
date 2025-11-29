@@ -17,6 +17,7 @@
     groups: sudo
     append: yes
     create_home: yes
+    password: "{{ admin_password | password_hash('sha512') }}"
 
 - name: Add authorized_key from file
   authorized_key:

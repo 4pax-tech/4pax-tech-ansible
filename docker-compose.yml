@@ -4,10 +4,9 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: ansible
-    command: ["tail", "-f", "/dev/null"]
+    command: ["/app/entrypoint.sh"]
     volumes:
-      - .:/app
-      - ./ssh_keys:/keys
+      - ./ssh_keys:/keys:ro
 
   vps1-debian:
     build:

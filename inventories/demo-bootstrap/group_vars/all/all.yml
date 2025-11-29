@@ -1,0 +1,59 @@
+---
+# User & SSH
+new_user: deploy                        # default non-root user to create
+new_user_shell: /bin/bash
+new_user_home: "/home/{{ new_user }}"
+new_user_ssh_pubkey: "/keys/id_ed25519_deploy.pub"   # path on controller to public key to install
+
+# SSH hardening
+ssh_port: 22
+ssh_allow_users: "{{ new_user }}"       # string or space-separated list
+ssh_permit_root_login: no
+ssh_password_auth: no
+ssh_challenge_response: no
+
+# Firewall
+# The role will collect ports to open in `firewall_allow_extra_ports`.
+# Provide defaults here (include ssh port so firewall tasks don't forget)
+firewall_allow_extra_ports:
+  - "{{ ssh_port }}"
+  - 80
+  - 443
+
+# Fail2ban
+fail2ban_bantime: 3600                  # ban length in seconds (1 hour)
+fail2ban_findtime: 600                  # window for counting failures (seconds)
+fail2ban_maxretry: 3
+
+# Package lists (OS-agnostic defaults; role uses OS-specific package modules)
+common_packages:
+  - curl
+  - wget
+  - git
+  - vim
+
+# Debian extra packages
+debian_extra_packages:
+  - ufw
+  - fail2ban
+
+# Alpine extra packages
+alpine_extra_packages:
+  - sudo
+  - iptables
+  - fail2ban
+  - openrc
+  # - openssh
+
+# Safety & behaviour
+allow_reboot_if_ssh_changed: false      # set true to allow automatic reboot when changing sshd port
+create_ssh_allow_rule_before_change: true   # create temporary firewall allow to prevent lockout
+config_backup_dir: /etc/ansible-backups  # where changed templates/copies store backups
+
+# Handlers & service names (defaults can be overridden by os-specific tasks)
+ssh_service_debian: ssh
+ssh_service_alpine: sshd
+
+# Misc
+ansible_become: true
+ansible_become_method: sudo

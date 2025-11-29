@@ -3,6 +3,12 @@
   service:
     name: "{{ ssh_service }}"
     state: restarted
+  when: ssh_restart_handler_type | default('service') == 'service'
+
+- name: restart ssh (s6)
+  command: s6-svc -r {{ ssh_s6_service_path }}
+  when: ssh_restart_handler_type | default('service') == 's6'
+  listen: "restart ssh"
 
 - name: reload ssh
   service:
