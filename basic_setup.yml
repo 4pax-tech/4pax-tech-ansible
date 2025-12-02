@@ -20,4 +20,4 @@
           {{ (ansible_facts.virtualization_type == 'docker')
              or ('docker' in (ansible_facts.cgroup | default('')) ) }}
   roles:
-    - simple
+    - basic_setup
