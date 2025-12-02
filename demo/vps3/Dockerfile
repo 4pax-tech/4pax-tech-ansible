@@ -1,7 +1,7 @@
 FROM alpine:latest
 
 # Install OpenSSH
-RUN apk add --no-cache openssh shadow
+RUN apk add --no-cache openssh shadow sudo
 
 # Create a non-root user
 RUN useradd -m -s /bin/ash user && \

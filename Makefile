@@ -20,7 +20,8 @@ stop-demo-vps:
 	docker compose down vps1 vps2 vps3
 
 start-demo: start-ansible start-demo-vps
-	@test -f inventories/demo-bootstrap/group_vars/all/vault.yml || docker exec -it ansible ansible-vault encrypt --output inventories/demo-bootstrap/group_vars/all/vault.yml inventories/demo-bootstrap/secrets.yml
+	docker cp ./demo/secrets.yml ansible:/app/secrets.yml
+	@test -f inventories/demo-bootstrap/group_vars/all/vault.yml || docker exec -it ansible ansible-vault encrypt --output inventories/demo-bootstrap/group_vars/all/vault.yml /app/secrets.yml
 	docker exec ansible cp ./inventories/demo-bootstrap/group_vars/all/vault.yml ./inventories/demo/group_vars/all/vault.yml
 
 stop-demo: stop-ansible stop-demo-vps

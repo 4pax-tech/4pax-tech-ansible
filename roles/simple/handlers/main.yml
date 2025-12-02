@@ -1,0 +1,48 @@
+---
+- name: restart ssh (docker)
+  listen: "restart ssh"
+  when: is_docker | default(false)
+  become: true
+  shell: |
+    set -e
+
+    # Ensure sshd binary exists
+    if ! command -v {{ sshd_binary | default('sshd') }} >/dev/null 2>&1; then
+      echo "sshd binary not found" >&2
+      exit 2
+    fi
+
+    # Validate config
+    {{ sshd_binary | default('sshd') }} -t -f {{ ssh_config_path | default('/etc/ssh/sshd_config') }}
+
+    # Find sshd PID
+    pid=$(pgrep -x sshd || pidof sshd || true)
+
+    if [ -z "$pid" ]; then
+      echo "sshd PID not found" >&2
+
+      if [ -x /etc/init.d/ssh ]; then
+        nohup /etc/init.d/ssh restart >/dev/null 2>&1 || exit 3
+      else
+        exit 4
+      fi
+    else
+      kill -HUP "$pid"
+    fi
+
+- name: restart ssh (normal host)
+  listen: "restart ssh"
+  when: not (is_docker | default(false))
+  become: true
+  service:
+    name: ssh
+    state: restarted
+
+- name: restart fail2ban
+  service:
+    name: fail2ban
+    state: restarted
+
+# - name: save iptables
+#   command: /etc/init.d/iptables save
+#   when: ansible_facts["os_family"] == "Alpine"

@@ -1,0 +1,4 @@
+---
+- name: Debug - show connection user (for logs)
+  debug:
+    msg: "Connecting as {{ ansible_user }} (host {{ inventory_hostname }})"

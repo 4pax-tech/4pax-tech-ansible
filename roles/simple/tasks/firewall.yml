@@ -1,6 +1,10 @@
 ---
 # Debian — UFW
 - block:
+    - name: Install ufw
+      apt:
+        name: ufw
+        state: present
     - name: Allow required ports
       ufw:
         rule: allow
@@ -11,7 +15,7 @@
       ufw:
         state: enabled
         policy: deny
-  when: ansible_facts["os_family"] == "Debian"
+  when: ansible_facts["os_family"] in ["Debian", "Ubuntu"]
 
 # Alpine — iptables
 - block:

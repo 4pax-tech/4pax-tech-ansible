@@ -1,0 +1,91 @@
+---
+- name: Debug - show connection user (for logs)
+  debug:
+    msg: "Connecting as {{ ansible_user }} (host {{ inventory_hostname }})"
+  tags: bootstrap
+
+- name: Update and install sudo on Debian
+  become_method: su
+  raw: apt-get update -y && apt-get install -y sudo
+  ignore_errors: yes
+  tags: bootstrap
+
+- name: Install python3 on Debian/Ubuntu as root
+  become_method: su
+  raw: apt-get install -y python3 python3-apt
+  when: 
+    - ansible_user == 'root'
+  ignore_errors: yes
+  tags: bootstrap
+
+# # ---------- Debian/Ubuntu (root)
+# - name: Install python3 on Debian/Ubuntu as root
+#   raw: apt-get install -y python3 python3-apt
+#   when: 
+#     - ansible_user == 'root'
+#   ignore_errors: yes
+#   tags: bootstrap
+
+# # ---------- Debian using sudo (non-root)
+# - name: Install python3 on Debian/Ubuntu using sudo (non-root)
+#   raw: |
+#     {% if ansible_become_password is defined %}
+#     echo "{{ ansible_become_password }}" | sudo -S apt-get install -y python3 python3-apt
+#     {% elif ansible_password is defined %}
+#     echo "{{ ansible_password }}" | sudo -S apt-get install -y python3 python3-apt
+#     {% else %}
+#     false
+#     {% endif %}
+#   when:
+#     - ansible_user != 'root'
+#   ignore_errors: yes
+#   tags: bootstrap
+
+# # ---------- Create a symlink /usr/bin/python -> python3 if python3 exists but python missing
+# - name: Create /usr/bin/python symlink to python3 if necessary
+#   raw: |
+#     if command -v python3 >/dev/null 2>&1; then
+#       if [ ! -x /usr/bin/python ]; then
+#         # try to create symlink as root
+#         {% if ansible_user == 'root' %}
+#         ln -s "$(command -v python3)" /usr/bin/python || true
+#         {% elif ansible_become_password is defined or ansible_password is defined %}
+#         echo "{{ (ansible_become_password | default(ansible_password, true)) }}" | sudo -S ln -s "$(command -v python3)" /usr/bin/python || true
+#         {% else %}
+#         true
+#         {% endif %}
+#       fi
+#     fi
+#   ignore_errors: yes
+#   tags: bootstrap
+
+# ---------- Create a symlink /usr/bin/python -> python3 if python3 exists but python missing
+- name: Create /usr/bin/python symlink to python3 if necessary
+  become_method: su
+  raw: |
+    if command -v python3 >/dev/null 2>&1; then
+      if [ ! -x /usr/bin/python ]; then
+        ln -s "$(command -v python3)" /usr/bin/python || true
+      fi
+    fi
+  ignore_errors: yes
+  tags: bootstrap
+
+# ---------- Check that python exists now
+- name: Check python interpreter presence
+  raw: |
+    if command -v python3 >/dev/null 2>&1; then echo "python3_ok"; else echo "no_python"; fi
+  register: python_check
+  changed_when: false
+  tags: bootstrap
+
+- name: Fail early if python installation couldn't be completed on host
+  fail:
+    msg: >
+      Python was not found or installed on the remote host {{ inventory_hostname }}.
+      For hosts that do not permit direct root login you must provide either:
+        - ansible_become_password (sudo password) in the host vars, or
+        - ansible_password if the same password should be used for SSH and sudo
+      Or connect as root via SSH key.
+  when: "'python3_ok' not in python_check.stdout"
+  tags: bootstrap

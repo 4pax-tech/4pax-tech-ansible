@@ -27,6 +27,7 @@ fail2ban_maxretry: 3
 
 # Package lists (OS-agnostic defaults; role uses OS-specific package modules)
 common_packages:
+  - sudo
   - curl
   - wget
   - git
@@ -39,7 +40,6 @@ debian_extra_packages:
 
 # Alpine extra packages
 alpine_extra_packages:
-  - sudo
   - iptables
   - fail2ban
   - openrc

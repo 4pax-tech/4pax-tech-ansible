@@ -1,0 +1,23 @@
+---
+- name: Bootstrap Debian
+  gather_facts: false
+  hosts: vps-debian
+  roles:
+    - bootstrap_debian
+    - bootstrap
+
+- name: Configure Debian hosts
+  hosts: vps-debian
+  gather_facts: true
+  pre_tasks:
+    - setup:
+    # This task is used to detect if the host is running inside Docker
+    # It is used to force the service manager to init when running inside Docker
+    # This is for example necessary for the ssh service to be restarted
+    - name: Detect if running inside Docker
+      set_fact:
+        is_docker: >-
+          {{ (ansible_facts.virtualization_type == 'docker')
+             or ('docker' in (ansible_facts.cgroup | default('')) ) }}
+  roles:
+    - simple

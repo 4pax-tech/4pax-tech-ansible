@@ -13,6 +13,15 @@
   set_fact:
     sshd_binary: "{{ '/usr/sbin/sshd.pam' if sshd_pam_bin.stat.exists else '/usr/sbin/sshd' }}"
 
+- name: Force SysV service manager inside Docker
+  set_fact:
+    ansible_service_mgr: init
+  when: is_docker | default(false)
+
+- name: Debug - show virtualization type and service manager
+  debug:
+    msg: "Virtualization type: {{ ansible_facts.virtualization_type }} - {{ansible_service_mgr}}"
+
 - name: Deploy SSH config
   template:
     src: sshd_config.j2
@@ -20,14 +29,3 @@
     backup: yes
     validate: "{{ sshd_binary }} -t -f %s"
   notify: restart ssh
-
-- name: Check SSH port is active
-  command: "ss -tulpn | grep -E ':{{ ssh_port }} '"
-  register: ssh_port_check
-  failed_when: false
-
-- name: Reboot if SSH port did not activate
-  reboot:
-  when:
-    - allow_reboot_if_ssh_changed
-    - ssh_port_check.rc != 0

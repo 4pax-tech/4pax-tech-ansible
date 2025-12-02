@@ -1,0 +1,44 @@
+---
+- name: Ensure group 'wheel' exists # This is mainly for RedHat/CentOS/Fedora systems
+  group:
+    name: wheel
+    state: present
+
+- name: Ensure group 'sudo' exists
+  group:
+    name: sudo
+    state: present
+
+# - name: Get root password entry
+#   ansible.builtin.getent:
+#     database: shadow
+#     key: "{{ ansible_user }}"
+#   register: root_shadow
+
+# - name: Debug - show connection user (for logs)
+#   debug:
+#     msg: "User password: {{ ansible_user }} - {{ root_shadow.ansible_facts.getent_shadow.root.0 }}"
+
+# - name: Ensure root password is set only if missing
+#   ansible.builtin.user:
+#     name: "{{ ansible_user }}"
+#     password: "{{ default_root_password | password_hash('sha512') }}"
+#   when: >
+#     root_shadow.ansible_facts.getent_shadow.root.0 in
+#     ['', '!', '!*', '*']
+
+- name: Ensure user exists
+  user:
+    name: "{{ new_user }}"
+    shell: "{{ new_user_shell }}"
+    home: "{{ new_user_home }}"
+    groups: sudo
+    append: yes
+    create_home: yes
+    password: "{{ admin_password | password_hash('sha512') }}"
+
+- name: Add authorized_key from file
+  ansible.posix.authorized_key:
+    user: "{{ new_user }}"
+    key: "{{ lookup('file', new_user_ssh_pubkey) }}"
+
