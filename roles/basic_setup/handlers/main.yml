@@ -38,7 +38,32 @@
     name: ssh
     state: restarted
 
-- name: restart fail2ban
+- name: restart fail2ban (docker)
+  listen: "restart fail2ban"
+  when: is_docker | default(false)
+  become: true
+  shell: |
+    set -e
+
+    # Find fail2ban PID
+    pid=$(pgrep -x fail2ban || pidof fail2ban || true)
+
+    if [ -z "$pid" ]; then
+      echo "fail2ban PID not found" >&2
+
+      if [ -x /etc/init.d/fail2ban ]; then
+        nohup /etc/init.d/fail2ban restart >/dev/null 2>&1 || exit 3
+      else
+        exit 4
+      fi
+    else
+      kill -HUP "$pid"
+    fi
+
+- name: restart fail2ban (normal host)
+  listen: "restart fail2ban"
+  when: not (is_docker | default(false))
+  become: true
   service:
     name: fail2ban
     state: restarted
