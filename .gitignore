@@ -2,3 +2,4 @@ inventory/hosts*
 ssh_keys/*
 inventories/production/*
 TODO.md
+secrets.yml
