@@ -12,7 +12,6 @@ RUN chmod +x ./entrypoint.sh
 
 COPY inventories/ ./inventories
 COPY roles/ ./roles
-COPY site.yml ./site.yml
 COPY basic_setup.yml ./basic_setup.yml
 COPY ansible.cfg ./ansible.cfg
 
