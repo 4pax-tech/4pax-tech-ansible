@@ -1,14 +1,14 @@
 ---
 - name: Bootstrap Debian
   gather_facts: false
-  hosts: vps-debian
+  hosts: vps_debian
   roles:
     - bootstrap_debian
     - bootstrap
 
 - name: Bootstrap Alpine
   gather_facts: false
-  hosts: vps-alpine
+  hosts: vps_alpine
   roles:
     - bootstrap_alpine
     - bootstrap
