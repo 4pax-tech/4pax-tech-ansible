@@ -20,7 +20,7 @@
 
 - name: Debug - show virtualization type and service manager
   debug:
-    msg: "Virtualization type: {{ ansible_facts.virtualization_type }} - {{ansible_service_mgr}}"
+    msg: "Virtualization type: {{ (ansible_facts['virtualization_type'] | default('NA')) }} - {{ansible_facts['service_mgr']}}"
 
 - name: Use PAM on Debian/Ubuntu
   set_fact:
