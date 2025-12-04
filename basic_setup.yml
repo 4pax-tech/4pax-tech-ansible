@@ -6,8 +6,15 @@
     - bootstrap_debian
     - bootstrap
 
+- name: Bootstrap Alpine
+  gather_facts: false
+  hosts: vps-alpine
+  roles:
+    - bootstrap_alpine
+    - bootstrap
+
 - name: Configure Debian hosts
-  hosts: vps-debian
+  hosts: all
   gather_facts: true
   pre_tasks:
     - setup:
