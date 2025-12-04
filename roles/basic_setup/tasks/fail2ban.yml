@@ -23,6 +23,18 @@
         state: present
         update_cache: yes
 
+    - name: Ensure /var/log/fail2ban.log exists for Fail2Ban (Alpine)
+      file:
+        path: /var/log/fail2ban.log
+        state: touch
+        mode: '0644'
+    
+    - name: Ensure /var/log/messages exists for Fail2Ban (Alpine)
+      file:
+        path: /var/log/messages
+        state: touch
+        mode: '0644'
+
     - name: Configure fail2ban (Alpine)
       template:
         src: jail.alpine.j2
@@ -32,4 +44,5 @@
 
     - name: Enable fail2ban on boot
       command: rc-update add fail2ban default
+      when: not (is_docker | default(false))
   when: ansible_facts["os_family"] == "Alpine"

@@ -22,6 +22,10 @@
   debug:
     msg: "Virtualization type: {{ ansible_facts.virtualization_type }} - {{ansible_service_mgr}}"
 
+- name: Use PAM on Debian/Ubuntu
+  set_fact:
+    ssh_use_pam: ansible_facts["os_family"] in ["Debian", "Ubuntu"]
+
 - name: Deploy SSH config
   template:
     src: sshd_config.j2

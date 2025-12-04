@@ -16,4 +16,6 @@ AllowUsers {{ ssh_allow_users | join(' ') }}
 {% endif %}
 {% endif %}
 
+{% if ssh_use_pam is defined and ssh_use_pam %}
 UsePAM yes
+{% endif %}

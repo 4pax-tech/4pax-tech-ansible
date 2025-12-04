@@ -44,21 +44,14 @@
   become: true
   shell: |
     set -e
-
-    # Find fail2ban PID
-    pid=$(pgrep -x fail2ban || pidof fail2ban || true)
-
-    if [ -z "$pid" ]; then
-      echo "fail2ban PID not found" >&2
-
-      if [ -x /etc/init.d/fail2ban ]; then
-        nohup /etc/init.d/fail2ban restart >/dev/null 2>&1 || exit 3
-      else
-        exit 4
-      fi
-    else
-      kill -HUP "$pid"
+    if pgrep -f fail2ban-server >/dev/null 2>&1; then
+      echo "Stopping fail2ban"
+      fail2ban-client stop || true
+      sleep 1
     fi
+    nohup fail2ban-server -xf start >/dev/null 2>&1 &
+  args:
+    executable: /bin/sh
 
 - name: restart fail2ban (normal host)
   listen: "restart fail2ban"
@@ -68,6 +61,17 @@
     name: fail2ban
     state: restarted
 
-# - name: save iptables
-#   command: /etc/init.d/iptables save
-#   when: ansible_facts["os_family"] == "Alpine"
+- name: save iptables (docker)
+  listen: "save iptables"
+  when: is_docker | default(false)
+  shell: |
+    mkdir -p /etc/iptables
+    iptables-save > /etc/iptables/rules-save
+    ip6tables-save > /etc/iptables/rules6-save
+  args:
+    executable: /bin/sh
+
+- name: save iptables (normal host)
+  listen: "save iptables"
+  when: not(is_docker | default(false))
+  command: /etc/init.d/iptables save

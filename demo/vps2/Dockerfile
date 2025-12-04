@@ -1,14 +1,18 @@
 FROM alpine:latest
 
 # Install OpenSSH
-RUN apk add --no-cache openssh shadow sudo
+RUN apk add --no-cache openssh shadow
 
 # Create a non-root user
 RUN useradd -m -s /bin/ash user && \
     usermod -aG root user
 
-# Set a password for the user
-RUN echo 'user:passwordABCD' | chpasswd
+# Enable SUID bit on su (to avoid 'su: must be suid to work properly')
+RUN chmod u+s /bin/su
+
+# Set a password for the user and for root
+RUN echo 'user:passwordABCD' | chpasswd && \
+    echo 'root:password_root' | chpasswd
 
 # Configure SSH
 RUN ssh-keygen -A && \
