@@ -1,32 +1,12 @@
 ---
-- name: Debug - show connection user (for logs)
-  debug:
-    msg: "Connecting as {{ ansible_user }} (host {{ inventory_hostname }})"
-  tags: bootstrap
-
 - name: Update and install sudo on Alpine
+  become_method: su
   raw: apk update && apk add --no-cache sudo
   ignore_errors: yes
   tags: bootstrap
 
 - name: Install python3 on Alpine as root
+  become_method: su
   raw: apk add --no-cache python3 py3-pip
-  when:
-    - ansible_user == 'root'
-  ignore_errors: yes
-  tags: bootstrap
-
-# ---------- Alpine using sudo (non-root)
-- name: Install python3 on Alpine using sudo (non-root)
-  raw: |
-    {% if ansible_become_password is defined %}
-    echo "{{ ansible_become_password }}" | sudo -S apk add --no-cache python3 py3-pip
-    {% elif ansible_password is defined %}
-    echo "{{ ansible_password }}" | sudo -S apk add --no-cache python3 py3-pip
-    {% else %}
-    false
-    {% endif %}
-  when:
-    - ansible_user != 'root'
   ignore_errors: yes
   tags: bootstrap

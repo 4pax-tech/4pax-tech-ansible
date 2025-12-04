@@ -1,13 +1,48 @@
 ---
-- name: Ensure group 'wheel' exists # This is mainly for RedHat/CentOS/Fedora systems
-  group:
-    name: wheel
-    state: present
+# Detect correct sudo group for the OS
+- name: Determine sudo-capable group
+  set_fact:
+    sudo_group: >-
+      {{ 'sudo' if ansible_facts['os_family'] in ['Debian'] else
+         'wheel' if ansible_facts['os_family'] in ['RedHat', 'Alpine'] else
+         'sudo' }}
 
-- name: Ensure group 'sudo' exists
-  group:
+# Ensure sudo package is installed
+- name: Ensure sudo is installed
+  package:
     name: sudo
     state: present
+
+# Enable sudo access for the correct group (with password required)
+- name: Enable sudo access for group (password required)
+  lineinfile:
+    path: /etc/sudoers
+    regexp: "^%{{ sudo_group }}"
+    line: "%{{ sudo_group }} ALL=(ALL:ALL) ALL"
+    state: present
+    validate: "visudo -cf %s"
+
+# Optional: ensure sudoers.d directory exists
+- name: Ensure /etc/sudoers.d exists
+  file:
+    path: /etc/sudoers.d
+    state: directory
+    mode: "0750"
+
+- name: Ensure sudoer group exists
+  group:
+    name: "{{ sudo_group }}"
+    state: present
+
+# - name: Ensure group 'wheel' exists # This is mainly for RedHat/CentOS/Fedora systems
+#   group:
+#     name: wheel
+#     state: present
+
+# - name: Ensure group 'sudo' exists
+#   group:
+#     name: sudo
+#     state: present
 
 # - name: Get root password entry
 #   ansible.builtin.getent:
@@ -32,7 +67,7 @@
     name: "{{ new_user }}"
     shell: "{{ new_user_shell }}"
     home: "{{ new_user_home }}"
-    groups: sudo
+    groups: "{{ sudo_group }}"
     append: yes
     create_home: yes
     password: "{{ admin_password | password_hash('sha512') }}"

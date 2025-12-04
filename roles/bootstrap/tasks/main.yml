@@ -1,17 +1,11 @@
 ---
 # ---------- Create a symlink /usr/bin/python -> python3 if python3 exists but python missing
 - name: Create /usr/bin/python symlink to python3 if necessary
+  become_method: su
   raw: |
     if command -v python3 >/dev/null 2>&1; then
       if [ ! -x /usr/bin/python ]; then
-        # try to create symlink as root
-        {% if ansible_user == 'root' %}
         ln -s "$(command -v python3)" /usr/bin/python || true
-        {% elif ansible_become_password is defined or ansible_password is defined %}
-        echo "{{ (ansible_become_password | default(ansible_password, true)) }}" | sudo -S ln -s "$(command -v python3)" /usr/bin/python || true
-        {% else %}
-        true
-        {% endif %}
       fi
     fi
   ignore_errors: yes

@@ -31,5 +31,6 @@
 
     - name: Enable iptables on boot
       command: rc-update add iptables default
+      when: not (is_docker | default(false))
 
   when: ansible_facts["os_family"] == "Alpine"

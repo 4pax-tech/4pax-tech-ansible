@@ -1,0 +1,4 @@
+sftp_subsystem_path: >-
+  {{ '/usr/lib/openssh/sftp-server' if ansible_facts["os_family"] in ['Ubuntu','Debian']
+     else '/usr/libexec/openssh/sftp-server' if ansible_facts["os_family"] in ['RedHat','Rocky','AlmaLinux']
+     else '/usr/lib/ssh/sftp-server' }}
